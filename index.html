@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Matemáticas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        canvas {
+            background-color: #dff9fb;
+            border: 2px solid #000;
+            display: block;
+            margin: 20px auto;
+        }
+        .score {
+            font-size: 20px;
+            color: #130f40;
+        }
+    </style>
+</head>
+<body>
+    <h1>Juego de Matemáticas</h1>
+    <p>Usa las flechas del teclado para mover el personaje hacia la respuesta correcta.</p>
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <p class="score">Puntuación: <span id="score">0</span></p>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let score = 0;
+        let problem = {};
+        let options = [];
+        const player = { x: 50, y: 50, width: 50, height: 50, speed: 5 };
+        const images = ['https://example.com/player-image.png'];  // Puedes usar URLs de imágenes o locales
+
+        // Función para generar problemas matemáticos aleatorios
+        function generateProblem() {
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            const result = num1 + num2;
+            problem = { num1, num2, result };
+            
+            // Generar opciones (una correcta y otras incorrectas)
+            options = [
+                { value: result, x: Math.random() * (canvas.width - 50), y: Math.random() * (canvas.height - 50) },
+                { value: result + Math.floor(Math.random() * 5 + 1), x: Math.random() * (canvas.width - 50), y: Math.random() * (canvas.height - 50) },
+                { value: result - Math.floor(Math.random() * 5 + 1), x: Math.random() * (canvas.width - 50), y: Math.random() * (canvas.height - 50) }
+            ];
+            shuffle(options);  // Mezclar opciones
+        }
+
+        // Función para dibujar el problema y opciones en el lienzo
+        function drawProblem() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#130f40";
+            ctx.font = "20px Arial";
+            ctx.fillText(`¿Cuánto es ${problem.num1} + ${problem.num2}?`, 20, 30);
+
+            options.forEach(option => {
+                ctx.fillStyle = "#badc58";
+                ctx.fillRect(option.x, option.y, 50, 50);
+                ctx.fillStyle = "#000";
+                ctx.fillText(option.value, option.x + 15, option.y + 30);
+            });
+
+            // Dibujar al jugador
+            ctx.fillStyle = "#ff7979";
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        // Función para verificar colisión entre el jugador y las opciones
+        function checkCollision() {
+            options.forEach(option => {
+                if (player.x < option.x + 50 &&
+                    player.x + player.width > option.x &&
+                    player.y < option.y + 50 &&
+                    player.y + player.height > option.y) {
+                    if (option.value === problem.result) {
+                        score++;
+                        document.getElementById('score').innerText = score;
+                        generateProblem();
+                    }
+                }
+            });
+        }
+
+        // Función para mezclar las opciones
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Evento de teclado para mover al jugador
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowUp':
+                    player.y = Math.max(0, player.y - player.speed);
+                    break;
+                case 'ArrowDown':
+                    player.y = Math.min(canvas.height - player.height, player.y + player.speed);
+                    break;
+                case 'ArrowLeft':
+                    player.x = Math.max(0, player.x - player.speed);
+                    break;
+                case 'ArrowRight':
+                    player.x = Math.min(canvas.width - player.width, player.x + player.speed);
+                    break;
+            }
+            checkCollision();
+            drawProblem();
+        });
+
+        // Iniciar el juego
+        function startGame() {
+            generateProblem();
+            drawProblem();
+        }
+
+        startGame();
+    </script>
+</body>
+</html>
